@@ -7,12 +7,13 @@ pub enum Type {
      *The type of token to return to interpreter
      */
     Digits,
-    // Identifiers,
+    Identifier,
     Plus,
     Minus,
     Divide,
     LeftParenthesis,
     RightParenthesis,
+    Equals,
     // EndOfLine,
     SemiColon,
     NewLine,
@@ -31,7 +32,9 @@ impl Type {
             Some(Type::Digits) => String::from("Digits"),
             Some(Type::Whoknows) => String::from("who_knows"),
             Some(Type::SemiColon) => String::from("Semi colon"),
-            Some(Type::NewLine) => String::from("newline"),
+            // Some(Type::NewLine) => String::from("newline"),
+            Some(Type::Equals) => String::from("Equals"),
+            Some(Type::Identifier) => String::from("Identifier"),
             // Some(Type::EndOfLine) => String::from("EOL"),
             None => String::from("ther is nothing bro"),
         }
@@ -52,11 +55,11 @@ impl<'a> Lexer<'a> {
         for token in string_to_break {
             let mut char_vec: Vec<char> = token.chars().collect();
             let rem_v = char_vec.clone();
-            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")"];
+            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")",";"];
 
             for (i, chara) in rem_v.iter().enumerate() {
                 let ign = chara.to_string();
-                println!("{:}", ign);
+                // println!("{:}", ign);
                 for item in expression_list.iter() {
                     if &ign == item {
                         token_queue.push_back(ign.clone());
@@ -70,15 +73,21 @@ impl<'a> Lexer<'a> {
         token_queue
     }
     pub fn matches_digit_and_id( a_string:&str)->Option<Type>{
-        let digit_regex = Regex::new(r"\d").unwrap();
+        let digit_regex = Regex::new(r"^\d+$").unwrap();
+        let identifier_regex = Regex::new(r"^[a-zA-Z]+[0-9]*").unwrap();
+        println!("{:?}",a_string);
         if digit_regex.is_match(a_string){
             return Some(Type::Digits);
-        }else{
+        }else if identifier_regex.is_match(a_string){
+
+            return Some(Type::Identifier);
+        }
+        else{
             return None;
         }
     }
     pub fn return_type(&self, some_string: String) -> Option<Type> {
-        println!("{:?}", some_string.as_str());
+        // println!("{:?}", some_string.as_str());
         // let a = Regex::new(r"\d").unwrap().is_match(some_string.as_str());
         match some_string.as_str() {
             "+" => Some(Type::Plus),
@@ -86,13 +95,15 @@ impl<'a> Lexer<'a> {
             "(" => Some(Type::LeftParenthesis),
             ")" => Some(Type::RightParenthesis),
             "/" => Some(Type::Divide),
-            r"\n" => Some(Type::NewLine),
+
             ";" => Some(Type::SemiColon),
+            "=" => Some(Type::Equals),
             _ => Lexer::matches_digit_and_id(some_string.as_str()),       
         }
     }
 
-    pub fn token_return(&self, mut token_q: VecDeque<String>) -> Option<String> {
+    pub fn token_return(&self,  token_q: &mut VecDeque<String>) -> Option<String> {
+        
         if !token_q.is_empty() {
             let b = token_q.pop_front();
             return b;
