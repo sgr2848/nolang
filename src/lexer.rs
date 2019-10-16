@@ -55,7 +55,7 @@ impl<'a> Lexer<'a> {
         for token in string_to_break {
             let mut char_vec: Vec<char> = token.chars().collect();
             let rem_v = char_vec.clone();
-            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")",";"];
+            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")", ";"];
 
             for (i, chara) in rem_v.iter().enumerate() {
                 let ign = chara.to_string();
@@ -72,17 +72,15 @@ impl<'a> Lexer<'a> {
         }
         token_queue
     }
-    pub fn matches_digit_and_id( a_string:&str)->Option<Type>{
+    pub fn matches_digit_and_id(a_string: &str) -> Option<Type> {
         let digit_regex = Regex::new(r"^\d+$").unwrap();
         let identifier_regex = Regex::new(r"^[a-zA-Z]+[0-9]*").unwrap();
-        println!("{:?}",a_string);
-        if digit_regex.is_match(a_string){
+        println!("{:?}", a_string);
+        if digit_regex.is_match(a_string) {
             return Some(Type::Digits);
-        }else if identifier_regex.is_match(a_string){
-
+        } else if identifier_regex.is_match(a_string) {
             return Some(Type::Identifier);
-        }
-        else{
+        } else {
             return None;
         }
     }
@@ -95,15 +93,13 @@ impl<'a> Lexer<'a> {
             "(" => Some(Type::LeftParenthesis),
             ")" => Some(Type::RightParenthesis),
             "/" => Some(Type::Divide),
-
             ";" => Some(Type::SemiColon),
             "=" => Some(Type::Equals),
-            _ => Lexer::matches_digit_and_id(some_string.as_str()),       
+            _ => Lexer::matches_digit_and_id(some_string.as_str()),
         }
     }
 
-    pub fn token_return(&self,  token_q: &mut VecDeque<String>) -> Option<String> {
-        
+    pub fn token_return(&self, token_q: &mut VecDeque<String>) -> Option<String> {
         if !token_q.is_empty() {
             let b = token_q.pop_front();
             return b;
