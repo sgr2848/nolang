@@ -1,5 +1,8 @@
 mod cli;
 mod lexer;
+mod interpreter;
+mod node;
+// mod interpreter; 
 
 use std::collections::VecDeque;
 use std::io::{stdin, stdout, Write};
@@ -24,16 +27,18 @@ fn main() {
                 print!("");
             } 
             else {
-                let _a_token = lexer::Lexer {
+                let _a_token = lex::Lexer {
                     a_value: &input_string,
                 };
                 let mut token_vector: VecDeque<String> = _a_token.get_token_queue();
                 loop {
-                    let t_n_i = _a_token.token_return(&mut token_vector).unwrap();
-                    let r = t_n_i.clone();
+                    let t_n_i = _a_token.token_return(&mut token_vector).unwrap();                    
                     let t_r = _a_token.return_type(t_n_i);
-                    print!("{:?} -->", r);
-                    println!("{:?}", lexer::Type::match_type(t_r));
+                    let s = t_n_i.clone();
+                    // let t = t_r.clone();
+
+                    // print!("{:?} -->", rar.get_value());
+                    // println!("{:?}", lexer::Type::match_type(rar.get_type));
                     if token_vector.is_empty() {
                         break;
                     }
