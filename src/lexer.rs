@@ -67,21 +67,38 @@ impl<'a> Lexer<'a> {
         let string_to_break = self.a_value.split_whitespace();
         let mut token_queue: VecDeque<String> = VecDeque::new();
         for token in string_to_break {
+            let mut i_string = String::new();
             let mut char_vec: Vec<char> = token.chars().collect();
             let rem_v = char_vec.clone();
-            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")", ";", "*"];
-            for (i, chara) in rem_v.iter().enumerate() {
-                let ign = chara.to_string();
-                // dbg!(&ign);
-                for item in expression_list.iter() {
-                    if &ign == item {
-                        token_queue.push_back(ign.clone());
-                        char_vec.remove(i);
+            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")", "*"];
+            let reg_id = Regex::new(r"[a-zA-Z]").unwrap();
+            let digi_id = Regex::new(r"\d").unwrap();
+            for charcter in rem_v.iter(){
+                if reg_id.is_match(&charcter.to_string()) || digi_id.is_match(&charcter.to_string()){
+                    i_string.push(*charcter);
+                }else{
+                    dbg!(i_string.clone());
+                    token_queue.push_back(i_string.clone());
+                    while !i_string.is_empty(){
+                        i_string.remove(i_string.len() -1);                        
                     }
-                }
+                    token_queue.push_back(charcter.to_string());
+                }               
             }
-            let token_now: String = char_vec.iter().collect();
-            token_queue.push_back(token_now);
+            token_queue.push_back(i_string);
+
+            // for (i, chara) in rem_v.iter().enumerate() {
+            //     let ign = chara.to_string();
+            //     // dbg!(&ign);
+            //     for item in expression_list.iter() {
+            //         if &ign == item {
+            //             token_queue.push_back(ign.clone());
+            //             char_vec.remove(i);
+            //         }
+            //     }
+            // }
+            // let token_now: String = char_vec.iter().collect();
+            // token_queue.push_back(token_now);
         }
         token_queue
     }
@@ -183,7 +200,7 @@ impl ConvertInfix {
         let a_c_vec: Vec<char> = some_chr.chars().collect();
         let mut boolval: bool = false;
         for a_char in a_c_vec {
-            boolval = a_char.is_alphabetic();
+            boolval = a_char.is_alphabetic() ;
         }
         boolval
     }

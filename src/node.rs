@@ -7,11 +7,11 @@ pub struct NodeId{
     index: u32,
 }
 impl NodeId{
-    
+
 }
 #[derive(Clone)]
 pub struct ParseTreeNode {
-    pub dat: Option<MapStruct>,
+    pub data: Option<MapStruct>,
     pub r_child: Option<NodeId>,
     pub l_child: Option<NodeId>,
     pub parent: Option<NodeId>,
@@ -19,9 +19,9 @@ pub struct ParseTreeNode {
 }
 
 impl ParseTreeNode {
-    pub fn get_default_node() -> ParseTreeNode {
+    pub(crate) fn new_node(data_in: MapStruct) -> ParseTreeNode {
         ParseTreeNode {
-            dat: None,
+            data:Some(data_in),
             r_child: None,
             l_child: None,
             parent: None,
@@ -38,16 +38,13 @@ impl ParseTreeNode {
         }
     }
     pub fn is_null(&self) -> bool {
-        match self.dat {
+        match self.data {
             None => true,
             _ => false,
         }
     }
      
-    fn add_data(mut self, datain: MapStruct) -> Self {
-        self.dat = Some(datain);
-        self
-    }
+
     //These are utilitu function for easier ops
     fn parent(self)->Option<NodeId>{
         self.parent
