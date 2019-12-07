@@ -4,7 +4,7 @@ mod interpreter;
 mod node;
 // mod interpreter; 
 
-use std::collections::VecDeque;
+use std::collections::{VecDeque,HashMap};
 use std::io::{stdin, stdout, Write};
 use std::string::String;
 fn main() {
@@ -27,22 +27,30 @@ fn main() {
                 print!("");
             } 
             else {
-                let _a_token = lex::Lexer {
+                let _a_token = lexer::Lexer {
                     a_value: &input_string,
                 };
                 let mut token_vector: VecDeque<String> = _a_token.get_token_queue();
-                loop {
-                    let t_n_i = _a_token.token_return(&mut token_vector).unwrap();                    
-                    let t_r = _a_token.return_type(t_n_i);
-                    let s = t_n_i.clone();
-                    // let t = t_r.clone();
 
-                    // print!("{:?} -->", rar.get_value());
-                    // println!("{:?}", lexer::Type::match_type(rar.get_type));
-                    if token_vector.is_empty() {
+                loop {
+                    // println!("{:?}",token_vector.clone());
+                    let mut a = lexer::ConvertInfix{
+                        top:-1,
+                        some_string:token_vector.clone(),
+                        stack:vec!["$".to_string()]
+                    }.to_postfix();
+                    // let mut token_now_i = _a_token.token_return(&mut token_vector).unwrap();
+                    // println!("{:?}",_a_token.token_return(token_vector).unwrap());
+                    // let mut c = _a_token.return_type(token_now_i);
+                    // println!("{:?}",lexer::Type::match_type(c));
+                    println!("{:?}",a.clone());
+                    a.pop();
+                    token_vector.pop_back();   
+                    if a.is_empty() {
                         break;
                     }
                 }
+                
             }
             println!("");
         }

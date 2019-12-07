@@ -1,8 +1,7 @@
-
 use regex::Regex;
-use std::collections::{VecDeque,HashMap};
+use std::collections::{HashMap, VecDeque};
 use std::string::String;
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 
 pub enum Type {
     /*
@@ -16,6 +15,7 @@ pub enum Type {
     LeftParenthesis,
     RightParenthesis,
     Equals,
+    Multiply,
     // EndOfLine,
     SemiColon,
     NewLine,
@@ -25,6 +25,7 @@ impl Type {
     //this might be a little redundant, but ehh
     pub fn match_type(a_type: Option<Type>) -> String {
         match a_type {
+            Some(Type::Multiply) => String::from("Multiply"),
             Some(Type::Plus) => String::from("Plus"),
             Some(Type::Minus) => String::from("Minus"),
             Some(Type::LeftParenthesis) => String::from("Parenthesis"),
@@ -38,6 +39,19 @@ impl Type {
             Some(Type::Identifier) => String::from("Identifier"),
             // Some(Type::EndOfLine) => String::from("EOL"),
             None => String::from("Nan"),
+        }
+    }
+    pub fn match_id_digits(some_type: Option<Type>) -> bool {
+        match some_type {
+            Some(Type::Identifier) => true,
+            Some(Type::Digits) => true,
+            _ => false,
+        }
+    }
+    pub fn is_eq_type(some_type: Option<Type>) -> bool {
+        match some_type {
+            Some(Type::Equals) => true,
+            _ => false,
         }
     }
 }
@@ -55,34 +69,32 @@ impl<'a> Lexer<'a> {
         for token in string_to_break {
             let mut char_vec: Vec<char> = token.chars().collect();
             let rem_v = char_vec.clone();
-            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")", ";"];
-            for (i, chara) in rem_v.iter().enumerate() {                
+            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")", ";", "*"];
+            for (i, chara) in rem_v.iter().enumerate() {
                 let ign = chara.to_string();
                 // dbg!(&ign);
                 for item in expression_list.iter() {
                     if &ign == item {
                         token_queue.push_back(ign.clone());
-                        char_vec.remove(i);    
-                        }                    
+                        char_vec.remove(i);
                     }
-                }            
-      
+                }
+            }
             let token_now: String = char_vec.iter().collect();
             token_queue.push_back(token_now);
         }
         token_queue
     }
-    
     pub fn matches_digit_and_id(a_string: &str) -> Option<Type> {
         /*
         Function that matches the string to either digits or identifier
         ____________________
-        Parameter: 
+        Parameter:
             a_string : &str
         ____________________
         Return:
             Some(Type) | None
-        */ 
+        */
         let digit_regex = Regex::new(r"^\d+$").unwrap();
         let identifier_regex = Regex::new(r"^[a-zA-Z]+[0-9]*").unwrap();
         // dbg!(a_string);
@@ -98,13 +110,14 @@ impl<'a> Lexer<'a> {
         /*
         Function return Type of the given string
         ____________________
-        Parameter: 
+        Parameter:
             some_string : String
         ____________________
         Return:
             Type
-        */        
+        */
         match some_string.as_str() {
+            "*" => Some(Type::Multiply),
             "+" => Some(Type::Plus),
             "-" => Some(Type::Minus),
             "(" => Some(Type::LeftParenthesis),
@@ -112,7 +125,7 @@ impl<'a> Lexer<'a> {
             "/" => Some(Type::Divide),
             ";" => Some(Type::SemiColon),
             "=" => Some(Type::Equals),
-            "\n" => Some(Type::NewLine),
+            "\\n" => Some(Type::NewLine),
             _ => Lexer::matches_digit_and_id(some_string.as_str()),
         }
     }
@@ -121,7 +134,7 @@ impl<'a> Lexer<'a> {
         /*
         Function returns a string to use in the interpreter untill the queue is empty, return None if empty
                 ____________________
-        Parameter: 
+        Parameter:
             token_q : VecDeque(must be mutable)
         ____________________
         Return:
@@ -136,84 +149,89 @@ impl<'a> Lexer<'a> {
         }
     }
 }
-pub struct ConvertInfix{
-    top: i8,
-    some_string: VecDeque<String>,   
-    precedence: HashMap<String,i8>,
-    stack: Vec<String>,
+pub struct ConvertInfix {
+    pub top: i8,
+    pub some_string: VecDeque<String>,
+    pub stack: Vec<String>,
 }
-impl ConvertInfix{
-    fn is_empty(&self)->bool{
+impl ConvertInfix {
+    fn is_empty(&self) -> bool {
         if self.top == -1 {
             return true;
-        }else{
+        } else {
             false
         }
     }
-    fn peek(&self)->String{
-        return self.stack[self.stack.len()-1];
+    fn peek(&self) -> String {
+        let r_val = self.stack[self.stack.len() - 1].clone();
+        r_val
     }
-    fn pop(&self)->String{
-        if self.is_empty(){
+
+    fn pop(&mut self) -> String {
+        if self.is_empty() {
             return "$".to_string();
-        }else{
+        } else {
             self.top -= 1;
             self.stack.pop().unwrap()
         }
-
     }
-    fn push(&self,string_to_add: String){
-        self.top += 1 ;
+    fn push(&mut self, string_to_add: String) {
+        self.top += 1;
         self.stack.push(string_to_add);
     }
-    fn is_operand(&self,some_chr:String)->bool{
-        let a_c_vec : Vec<char> = some_chr.chars().collect();
-        let mut boolval : bool = false;
-        for a_char in a_c_vec{
-            boolval = a_char.is_alphabetic();    
+    fn is_operand(&self, some_chr: String) -> bool {
+        let a_c_vec: Vec<char> = some_chr.chars().collect();
+        let mut boolval: bool = false;
+        for a_char in a_c_vec {
+            boolval = a_char.is_alphabetic();
         }
         boolval
     }
-    fn not_greater(&self,some_chr: String)-> bool{
-        let a:i8 =self.precedence[&some_chr];
-        let b:i8 = self.precedence[&self.peek()];
-        if a<=b{
-            return true;
-        }else{
+    fn not_greater(&self, some_chr: String) -> bool {
+        let mut hash_map = HashMap::new();
+        hash_map.insert(String::from("+"), 1);
+        hash_map.insert(String::from("-"), 1);
+        hash_map.insert(String::from("*"), 2);
+        hash_map.insert(String::from("/"), 2);
+        if hash_map.contains_key(&some_chr) && hash_map.contains_key(&self.peek()) {
+            let a: i8 = hash_map[&some_chr];
+            let b: i8 = hash_map[&self.peek()];
+            if a <= b {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
             false
         }
     }
-    fn to_postfix(&self)->Vec<String>{
-        let return_vector: Vec<String>;
-        for i in self.some_string{
-            if self.is_operand(i){
-                return_vector.push(i);
-            }
-            else if i == "(".to_string(){
-                self.push(i)
-            }
-            else if i == ")".to_string(){
-                while (!self.is_empty()) && (self.peek() != "("){
-                    let a :String = self.pop();
+    pub fn to_postfix(&mut self) -> Vec<String> {
+        let mut return_vector = Vec::new();
+        for i in self.some_string.clone().iter() {
+            if self.is_operand(i.to_string()) {
+                return_vector.push(i.to_string());
+            } else if i.to_string() == "(".to_string() {
+                self.push(i.to_string())
+            } else if i.to_string() == ")".to_string() {
+                while (!self.is_empty()) && (self.peek() != "(") {
+                    let a: String = self.pop();
                     return_vector.push(a);
                 }
-                if !self.is_empty() && self.peek() != "("{
+                if !self.is_empty() && self.peek() != "(" {
                     println!("Something");
-                }else{
+                } else {
                     self.pop();
                 }
-            }else{
-                while (!self.is_empty()) && self.not_greater(i){
+            } else {
+                while (!self.is_empty()) && self.not_greater(i.to_string()) {
                     return_vector.push(self.pop());
                 }
-                self.push(i);                
+                self.push(i.to_string());
             }
         }
-        while !self.is_empty(){
+        while !self.is_empty() {
             return_vector.push(self.pop());
         }
         return_vector
     }
-
-
 }
