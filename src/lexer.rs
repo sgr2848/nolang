@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::collections::{HashMap, VecDeque};
 use std::string::String;
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone,Copy,PartialEq,Eq)]
 
 pub enum Type {
     /*
@@ -68,9 +68,8 @@ impl<'a> Lexer<'a> {
         let mut token_queue: VecDeque<String> = VecDeque::new();
         for token in string_to_break {
             let mut i_string = String::new();
-            let mut char_vec: Vec<char> = token.chars().collect();
+            let char_vec: Vec<char> = token.chars().collect();
             let rem_v = char_vec.clone();
-            let expression_list = ["{", "}", "+", "=", "-", "/", "<", ">", "(", ")", "*"];
             let reg_id = Regex::new(r"[a-zA-Z]").unwrap();
             let digi_id = Regex::new(r"\d").unwrap();
             for charcter in rem_v.iter(){
@@ -200,7 +199,7 @@ impl ConvertInfix {
         let a_c_vec: Vec<char> = some_chr.chars().collect();
         let mut boolval: bool = false;
         for a_char in a_c_vec {
-            boolval = a_char.is_alphabetic() ;
+            boolval = a_char.is_alphanumeric();
         }
         boolval
     }
