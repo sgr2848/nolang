@@ -26,6 +26,9 @@ fn main() {
         if let Some('\n') = input_string.chars().next_back() {
             input_string.pop();
             input_string.pop();
+            let mut h_map =  mapper::MapVec::init();
+            // let intp = interpreter::Interpret{}
+            let mut _m_vec =  mapper::MapVec
             if input_string == "exit" || input_string == ":q" {
                 break;
             }

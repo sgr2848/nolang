@@ -1,5 +1,5 @@
 use super::{
-    lexer::Type,
+    lexer::{ConvertInfix, Lexer, Type},
     mapper::MapVec,
     node::{NodeId, ParseTreeNode, CE},
 };
@@ -12,7 +12,8 @@ use std::{
     string::String,
 };
 
-#[derive(Clone, Eq, PartialEq,Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
+
 pub struct MapStruct {
     value: String,
     typ: Option<Type>,
@@ -41,7 +42,7 @@ impl MapStruct {
         }
     }
 }
-#[derive(Clone,Eq,PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct PTVec {
     pub nodes: Vec<ParseTreeNode>,
 }
@@ -114,13 +115,57 @@ pub(crate) fn insert_node(
     }
     Ok(())
 }
-#[derive(Clone,Eq,PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Interpret {
     id_map: MapVec,
 }
 impl Interpret {
-    fn check_validity(self, mut stream_vec: VecDeque<String>) -> bool {
-        true
+    // fn insert_value()
+    fn check_validity(self, mut _stream_vec: VecDeque<String>) -> bool {
+        let mut b_val = true;
+        let index: usize = 0;
+        let mut _current_token = &_stream_vec[index];
+        if _stream_vec.len() == 1 as usize
+            && Type::match_id(Lexer::return_type(_current_token.clone()))
+        {
+            if self.id_map.value_exists(MapStruct {
+                value: _current_token.clone(),
+                typ: Lexer::return_type(_current_token.clone()),
+            }) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if _stream_vec.len() >= 1
+            && Type::match_id(Lexer::return_type(_current_token.clone()))
+            && !self.id_map.clone().value_exists(MapStruct {
+                value: _current_token.clone(),
+                typ: Lexer::return_type(_current_token.clone()),
+            })
+        {
+            if Type::is_eq_type(Lexer::return_type(_stream_vec[index + 1].clone())) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            for i in 0..(_stream_vec.len() - 1) {
+                if Type::match_digits(Lexer::return_type(_stream_vec[i].clone())) {
+                    b_val = true;
+                } else if !Type::is_eq_type(Lexer::return_type(_stream_vec[i].clone()))
+                    && self.id_map.clone().value_exists(MapStruct {
+                        value: _current_token.clone(),
+                        typ: Lexer::return_type(_current_token.clone()),
+                    })
+                {
+                    b_val = true;
+                } else {
+                    b_val = false;
+                    break;
+                }
+            }
+            b_val
+        }
     }
     fn parse_sum(&self, int_a: i32, int_b: i32) -> i32 {
         return int_a + int_b;

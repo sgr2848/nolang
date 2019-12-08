@@ -48,6 +48,18 @@ impl Type {
             _ => false,
         }
     }
+    pub fn match_digits(some_type: Option<Type>) -> bool{
+        match some_type{
+            Some(Type::Digits)=>true,
+            _ => false,
+        }
+    }
+    pub fn match_id(some_type:Option<Type>)->bool{
+        match some_type{
+            Some(Type::Identifier) => true,
+            _ =>  false
+        }
+    }
     pub fn is_eq_type(some_type: Option<Type>) -> bool {
         match some_type {
             Some(Type::Equals) => true,
@@ -110,7 +122,7 @@ impl<'a> Lexer<'a> {
             return None;
         }
     }
-    pub fn return_type(&self, some_string: String) -> Option<Type> {
+    pub fn return_type(some_string: String) -> Option<Type> {
         /*
         Function return Type of the given string
         ____________________
