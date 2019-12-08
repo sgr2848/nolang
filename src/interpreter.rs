@@ -117,11 +117,11 @@ pub(crate) fn insert_node(
 }
 #[derive(Clone, Eq, PartialEq)]
 pub struct Interpret {
-    id_map: MapVec,
+    pub id_map: MapVec,
 }
 impl Interpret {
     // fn insert_value()
-    fn check_validity(self, mut _stream_vec: VecDeque<String>) -> bool {
+    pub fn check_validity(self, mut _stream_vec: VecDeque<String>) -> bool {
         let mut b_val = true;
         let index: usize = 0;
         let mut _current_token = &_stream_vec[index];
