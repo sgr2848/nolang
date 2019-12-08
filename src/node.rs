@@ -56,13 +56,13 @@ impl ParseTreeNode {
         &mut self.data
     }
     //These are utilitu function for easier ops
-    fn parent(self) -> Option<NodeId> {
+    pub fn parent(self) -> Option<NodeId> {
         self.parent
     }
-    fn left_child(self) -> Option<NodeId> {
+    pub fn left_child(self) -> Option<NodeId> {
         self.l_child
     }
-    fn right_child(self) -> Option<NodeId> {
+    pub fn right_child(self) -> Option<NodeId> {
         self.r_child
     }
 }

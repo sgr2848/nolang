@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::collections::{HashMap, VecDeque};
 use std::string::String;
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq,Hash)]
 
 pub enum Type {
     /*
@@ -28,7 +28,7 @@ impl Type {
             Some(Type::Multiply) => String::from("Multiply"),
             Some(Type::Plus) => String::from("Plus"),
             Some(Type::Minus) => String::from("Minus"),
-            Some(Type::LeftParenthesis) s=> String::from("Parenthesis"),
+            Some(Type::LeftParenthesis) => String::from("Parenthesis"),
             Some(Type::RightParenthesis) => String::from("Parenthesis"),
             Some(Type::Divide) => String::from("Divide"),
             Some(Type::Digits) => String::from("Digits"),

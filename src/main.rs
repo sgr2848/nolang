@@ -2,12 +2,18 @@ mod cli;
 mod lexer;
 mod interpreter;
 mod node;
+mod mapper;
 // mod interpreter; 
 
 use std::collections::{VecDeque,HashMap};
 use std::io::{stdin, stdout, Write};
 use std::string::String;
 fn main() {
+    /*TODO
+        *make hmap for id and mapstruct 
+        *make interpreter id validation
+    */
+
     match cli::start_nano() {
         Ok(a) => println!("{}", a),
         Err(e) => println!("{}", e),
