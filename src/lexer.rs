@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::collections::{HashMap, VecDeque};
 use std::string::String;
-#[derive(Debug, Clone,Copy,PartialEq,Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 
 pub enum Type {
     /*
@@ -28,7 +28,7 @@ impl Type {
             Some(Type::Multiply) => String::from("Multiply"),
             Some(Type::Plus) => String::from("Plus"),
             Some(Type::Minus) => String::from("Minus"),
-            Some(Type::LeftParenthesis) => String::from("Parenthesis"),
+            Some(Type::LeftParenthesis) s=> String::from("Parenthesis"),
             Some(Type::RightParenthesis) => String::from("Parenthesis"),
             Some(Type::Divide) => String::from("Divide"),
             Some(Type::Digits) => String::from("Digits"),
@@ -72,32 +72,20 @@ impl<'a> Lexer<'a> {
             let rem_v = char_vec.clone();
             let reg_id = Regex::new(r"[a-zA-Z]").unwrap();
             let digi_id = Regex::new(r"\d").unwrap();
-            for charcter in rem_v.iter(){
-                if reg_id.is_match(&charcter.to_string()) || digi_id.is_match(&charcter.to_string()){
+            for charcter in rem_v.iter() {
+                if reg_id.is_match(&charcter.to_string()) || digi_id.is_match(&charcter.to_string())
+                {
                     i_string.push(*charcter);
-                }else{
+                } else {
                     dbg!(i_string.clone());
                     token_queue.push_back(i_string.clone());
-                    while !i_string.is_empty(){
-                        i_string.remove(i_string.len() -1);                        
+                    while !i_string.is_empty() {
+                        i_string.remove(i_string.len() - 1);
                     }
                     token_queue.push_back(charcter.to_string());
-                }               
+                }
             }
             token_queue.push_back(i_string);
-
-            // for (i, chara) in rem_v.iter().enumerate() {
-            //     let ign = chara.to_string();
-            //     // dbg!(&ign);
-            //     for item in expression_list.iter() {
-            //         if &ign == item {
-            //             token_queue.push_back(ign.clone());
-            //             char_vec.remove(i);
-            //         }
-            //     }
-            // }
-            // let token_now: String = char_vec.iter().collect();
-            // token_queue.push_back(token_now);
         }
         token_queue
     }

@@ -92,11 +92,13 @@ pub(crate) fn insert_node(
     if new_id.index() != 0 as usize{
         let parent_node = pt_vec.get_mut(parent.unwrap()).unwrap();
         let parent_map_struct_type = parent_node.clone().get().unwrap().get_type();        
-        if parent_node.clone().is_leaf()&&!Type::match_id_digits(parent_map_struct_type){            
+        if parent_node.clone().is_leaf() && !Type::match_id_digits(parent_map_struct_type){            
             parent_node.l_child = Some(new_id);
             let mut current_node = &mut pt_vec.get_mut(new_id).unwrap();
             current_node.parent  = parent;
-        }       
+        
+        }
+        else if !parent_node.clone().is_leaf() && 
             
     }
     Ok(())
