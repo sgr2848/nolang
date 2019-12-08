@@ -26,6 +26,19 @@ fn main() {
             input_string.pop();
             input_string.pop();
             let mut h_map =  mapper::MapVec::init();
+            // h_map.data.insert(interpreter::MapStruct{
+            //     value: String::from("Hello"),
+            //     typ: Some(lexer::Type::Identifier)
+            // },interpreter::PTVec{nodes:vec![node::ParseTreeNode{
+            //     data: Some(interpreter::MapStruct{
+            //         value: String::from("2"),
+            //         typ: Some(lexer::Type::Digits)
+            //     }),
+            //     r_child:None,
+            //     l_child:None,
+            //     parent:None,
+            //     sibling:None,
+            // }]});
             let mut new_f = interpreter::Interpret{
                 id_map :h_map
             };
@@ -41,7 +54,7 @@ fn main() {
                     a_value: &input_string,
                 };
                 let mut token_vector: VecDeque<String> = _a_token.get_token_queue();
-                if !new_f.check_validity(token_vector.clone()){
+                if !new_f.check_validity(&mut token_vector){
                     println!("***********invalid or unintialized syntax somewhere********")
                 }else{
                     loop {

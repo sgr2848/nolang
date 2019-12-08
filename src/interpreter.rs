@@ -15,8 +15,8 @@ use std::{
 #[derive(Clone, Eq, PartialEq, Hash)]
 
 pub struct MapStruct {
-    value: String,
-    typ: Option<Type>,
+    pub value: String,
+    pub typ: Option<Type>,
 }
 impl MapStruct {
     pub fn get_value(self) -> String {
@@ -79,7 +79,7 @@ impl IndexMut<NodeId> for PTVec {
     }
 }
 pub(crate) fn insert_node(
-    mut pt_vec: PTVec,
+    pt_vec:&mut PTVec,
     new_id: NodeId,
     parent: Option<NodeId>,
     sibling: Option<NodeId>,
@@ -115,13 +115,31 @@ pub(crate) fn insert_node(
     }
     Ok(())
 }
+pub(crate) fn build_pt(mut pt_vec: PTVec,mut stack_v : Vec<String>)->PTVec{
+    let mut current_string: String = stack_v.pop().unwrap();
+    let _root_a_t_m = pt_vec.new_node(MapStruct{
+            value: current_string.clone(),
+            typ : Lexer::return_type(current_string.clone())
+        });
+    for i in stack_v.clone().iter(){
+        let mut current_string: String = stack_v.pop().unwrap();
+        let mut _node_a_t_m = pt_vec.new_node(MapStruct{
+            value: current_string.clone(),
+            typ : Lexer::return_type(current_string.clone())
+        });
+
+        _root_a_t_m.append(_node_a_t_m, &mut pt_vec);       
+    }
+    pt_vec
+}
 #[derive(Clone, Eq, PartialEq)]
-pub struct Interpret {
-    pub id_map: MapVec,
+pub struct Interpret { 
+    pub id_map:MapVec,
+ 
 }
 impl Interpret {
     // fn insert_value()
-    pub fn check_validity(self, mut _stream_vec: VecDeque<String>) -> bool {
+    pub fn check_validity(self, _stream_vec:  &mut VecDeque<String>) -> bool {
         let mut b_val = true;
         let index: usize = 0;
         let mut _current_token = &_stream_vec[index];
@@ -144,6 +162,9 @@ impl Interpret {
             })
         {
             if Type::is_eq_type(Lexer::return_type(_stream_vec[index + 1].clone())) {
+                for _ in 0..2{
+                    _stream_vec.pop_front();
+                }
                 return true;
             } else {
                 return false;
@@ -157,6 +178,7 @@ impl Interpret {
                         value: _current_token.clone(),
                         typ: Lexer::return_type(_current_token.clone()),
                     })
+                    
                 {
                     b_val = true;
                 } else {

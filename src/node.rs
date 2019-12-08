@@ -2,7 +2,11 @@
 use core::fmt;
 #[cfg(feature = "std")]
 use std::{fmt,error};
-use super::interpreter::MapStruct;
+use super::interpreter::{
+    MapStruct,
+    PTVec,
+    insert_node,
+};
 #[derive(Clone,Eq,PartialEq,Copy)]
 pub struct NodeId {
     index: usize,
@@ -13,7 +17,13 @@ impl NodeId {
     }
     pub fn rs(some_index:usize)->Self{
         NodeId{index:some_index}
+    } 
+    pub fn append(self,new_child:NodeId,ptree:&mut PTVec){
+    //    let  pt = PTVec.get(new_child);
+       insert_node(ptree,new_child,Some(NodeId{index:0 as usize}),None);
+       
     }
+
 }
 #[derive(Clone,Eq,PartialEq)]
 pub struct ParseTreeNode {
