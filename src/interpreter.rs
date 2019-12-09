@@ -4,9 +4,10 @@ use super::{
     node::{NodeId, ParseTreeNode, CE},
 };
 use regex::Regex;
-
 use std::collections::HashMap;
 use std::{
+    fmt,
+    error
     collections::VecDeque,
     ops::{Index, IndexMut},
     string::String,
@@ -19,6 +20,12 @@ pub struct MapStruct {
     pub typ: Option<Type>,
 }
 impl MapStruct {
+    pub new_struct(some_string:String)->MapStruct{
+        MapStruct{
+            value: some_string,
+            typ: Lexer::return_type(some_string.clone())
+        }
+    }
     pub fn get_value(self) -> String {
         return self.value;
     }
@@ -81,9 +88,13 @@ impl IndexMut<NodeId> for PTVec {
 pub(crate) fn insert_node(
     pt_vec:&mut PTVec,
     new_id: NodeId,
-    parent: Option<NodeId>,
-    sibling: Option<NodeId>,
+    parent_node: Node_Id
+
 ) -> Result<(), CE> {
+    /*
+    TODO ->make it recursive tonight
+    
+    */
     if sibling == Some(new_id) {
         return Err(CE::SiblingE);
     }
@@ -115,20 +126,14 @@ pub(crate) fn insert_node(
     }
     Ok(())
 }
+pub fn insert_node_with_parent()
 pub(crate) fn build_pt(mut pt_vec: PTVec,mut stack_v : Vec<String>)->PTVec{
-    let mut current_string: String = stack_v.pop().unwrap();
-    let _root_a_t_m = pt_vec.new_node(MapStruct{
-            value: current_string.clone(),
-            typ : Lexer::return_type(current_string.clone())
-        });
+    let mut root_string: String = stack_v.pop().unwrap();
+    let _root_a_t_m = pt_vec.new_node(MapStruct::new_struct(root_string.clone()));
     for i in stack_v.clone().iter(){
         let mut current_string: String = stack_v.pop().unwrap();
-        let mut _node_a_t_m = pt_vec.new_node(MapStruct{
-            value: current_string.clone(),
-            typ : Lexer::return_type(current_string.clone())
-        });
-
-        _root_a_t_m.append(_node_a_t_m, &mut pt_vec);       
+        let mut _node_a_t_m = pt_vec.new_node(MapStruct::new_struct(current_string.clone()));
+        interpreter.insert_node(pt_vec,_node_a_t_m,_root_a_t_m);       
     }
     pt_vec
 }
@@ -138,8 +143,8 @@ pub struct Interpret {
  
 }
 impl Interpret {
-    // fn insert_value()
-    pub fn check_validity(self, _stream_vec:  &mut VecDeque<String>) -> bool {
+
+    pub fn check_validity(mut self, _stream_vec:  &mut VecDeque<String>) -> bool {
         let mut b_val = true;
         let index: usize = 0;
         let mut _current_token = &_stream_vec[index];
@@ -162,9 +167,11 @@ impl Interpret {
             })
         {
             if Type::is_eq_type(Lexer::return_type(_stream_vec[index + 1].clone())) {
-                for _ in 0..2{
+                let id_name = _stream_vec.pop_front();
+                for _ in 0..1{
                     _stream_vec.pop_front();
-                }
+                }                
+                self.id_map.insert_val(id_name.clone(),_stream_vec.clone());
                 return true;
             } else {
                 return false;
@@ -201,4 +208,7 @@ impl Interpret {
     fn parse_div(&self, int_a: i32, int_b: i32) -> i32 {
         return int_a / int_b;
     }
+}
+enum PTVecError{
+
 }

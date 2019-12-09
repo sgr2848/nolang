@@ -35,7 +35,7 @@ impl MapVec{
             false
         }
     }
-    pub fn insert_val(mut self,some_id : String,some_vec:Vec<String>)->Result<(),MapVecError>{
+    pub fn insert_val(mut self,some_id : String,mut some_vec:Vec<String>)->Result<(),MapVecError>{
         if Type::match_id(Lexer::return_type(some_id.clone())){
             return Err(MapVecError::NotID);
         }
@@ -43,8 +43,9 @@ impl MapVec{
             value: some_id.clone(),
             typ: Lexer::return_type(some_id)
         };
-        let parse_tree_vec  = PTVec::new_tree();        
-        self.data.insert(id_map_struct, parse_tree_vec.clone());
+        let mut parse_tree_vec  = PTVec::new_tree();
+        let new_ptvec = interpreter::build_pt(parse_tree_vec, some_vec);
+        self.data.insert(id_map_struct, new_ptvec.clone());
         Ok(())
         
     }

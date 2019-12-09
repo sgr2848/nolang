@@ -26,19 +26,19 @@ fn main() {
             input_string.pop();
             input_string.pop();
             let mut h_map =  mapper::MapVec::init();
-            // h_map.data.insert(interpreter::MapStruct{
-            //     value: String::from("Hello"),
-            //     typ: Some(lexer::Type::Identifier)
-            // },interpreter::PTVec{nodes:vec![node::ParseTreeNode{
-            //     data: Some(interpreter::MapStruct{
-            //         value: String::from("2"),
-            //         typ: Some(lexer::Type::Digits)
-            //     }),
-            //     r_child:None,
-            //     l_child:None,
-            //     parent:None,
-            //     sibling:None,
-            // }]});
+            h_map.data.insert(interpreter::MapStruct{
+                value: String::from("Hello"),
+                typ: Some(lexer::Type::Identifier)
+            },interpreter::PTVec{nodes:vec![node::ParseTreeNode{
+                data: Some(interpreter::MapStruct{
+                    value: String::from("2"),
+                    typ: Some(lexer::Type::Digits)
+                }),
+                r_child:None,
+                l_child:None,
+                parent:None,
+                sibling:None,
+            }]});
             let mut new_f = interpreter::Interpret{
                 id_map :h_map
             };

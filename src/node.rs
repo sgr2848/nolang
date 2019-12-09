@@ -18,11 +18,7 @@ impl NodeId {
     pub fn rs(some_index:usize)->Self{
         NodeId{index:some_index}
     } 
-    pub fn append(self,new_child:NodeId,ptree:&mut PTVec){
-    //    let  pt = PTVec.get(new_child);
-       insert_node(ptree,new_child,Some(NodeId{index:0 as usize}),None);
-       
-    }
+
 
 }
 #[derive(Clone,Eq,PartialEq)]
