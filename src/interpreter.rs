@@ -32,14 +32,14 @@ impl MapStruct {
         }
     }
 }
-struct PTVec{
-    nodes: Vec<ParseTreeNode>
-}
-impl PTVec{
-    pub fn new_tree() -> PTVec{
-        Self::default();
-    }
-}
+// struct PTVec{
+//     nodes: Vec<ParseTreeNode>
+// }
+// impl PTVec{
+//     pub fn new_tree() -> PTVec{
+//         Self::default()
+//     }
+// }
 // pub struct Interpret {
 //     id_map:HashMap,
 // }
