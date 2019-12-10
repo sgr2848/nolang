@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(dead_code,unused_imports)]
 use super::{
     lexer::{ConvertInfix, Lexer, Type},
     mapper::MapVec,
@@ -7,10 +7,8 @@ use super::{
 use regex::Regex;
 use std::collections::HashMap;
 use std::{
-    mem,
-    fmt,
-    error,
     collections::VecDeque,
+    error, fmt, mem,
     ops::{Index, IndexMut},
     string::String,
 };
@@ -22,10 +20,10 @@ pub struct MapStruct {
     pub typ: Option<Type>,
 }
 impl MapStruct {
-    pub fn new_struct(some_string:String)->MapStruct{
-        MapStruct{
+    pub fn new_struct(some_string: String) -> MapStruct {
+        MapStruct {
             value: some_string.clone(),
-            typ: Lexer::return_type(some_string.clone())
+            typ: Lexer::return_type(some_string.clone()),
         }
     }
     pub fn get_value(self) -> String {
@@ -88,67 +86,64 @@ impl IndexMut<NodeId> for PTVec {
     }
 }
 pub(crate) fn insert_node(
-    pt_vec:&mut PTVec,
+    pt_vec: &mut PTVec,
     new_id: NodeId,
-    parent_node_id: NodeId
+    parent_node_id: NodeId,
 ) -> Result<(), CE> {
     /*
     TODO ->make it recursive tonight
-    
     */
     if parent_node_id == new_id {
         return Err(CE::ParentE);
     }
     let mut parent_n = pt_vec.get_mut(parent_node_id).unwrap().clone();
-    let mut current_n  = pt_vec.get_mut(new_id).unwrap();
-    if parent_n.is_leaf(){
+    let mut current_n = pt_vec.get_mut(new_id).unwrap();
+    if parent_n.is_leaf() {
         current_n.parent = Some(parent_node_id);
         parent_n.l_child = Some(new_id);
-        mem::replace(&mut pt_vec[parent_node_id],parent_n)
-      
-    }
-    else if !parent_n.is_leaf() && !parent_n.is_full(){
-        if parent_n.l_child.is_none() && parent_n.r_child.is_some(){
+        mem::replace(&mut pt_vec[parent_node_id], parent_n);
+    } else if !parent_n.is_leaf() && !parent_n.is_full() {
+        if parent_n.l_child.is_none() && parent_n.r_child.is_some() {
             parent_n.l_child = Some(new_id);
-            current_n.parent = Some(parent_node_id);            
+            current_n.parent = Some(parent_node_id);
             current_n.sibling = parent_n.r_child;
-        }else{
+            mem::replace(&mut pt_vec[parent_node_id], parent_n);
+        } else {
             parent_n.r_child = Some(new_id);
-            current_n.parent = Some(parent_node_id);            
+            current_n.parent = Some(parent_node_id);
             current_n.sibling = parent_n.l_child;
+            mem::replace(&mut pt_vec[parent_node_id], parent_n);
         }
-    }
-    else if parent_n.clone().is_full(){
+    } else if parent_n.clone().is_full() {
         let left_child = pt_vec.get(parent_n.l_child.unwrap());
         let right_child = pt_vec.get(parent_n.r_child.unwrap());
-        if !Type::match_id_digits(left_child.unwrap().data.clone().unwrap().get_type())&&Type::match_id_digits(right_child.unwrap().data.clone().unwrap().get_type()){
-            insert_node(pt_vec, new_id,parent_n.l_child.unwrap());
-        }
-        else{
-            insert_node(pt_vec, new_id,parent_n.r_child.unwrap());
+        if !Type::match_id_digits(left_child.unwrap().data.clone().unwrap().get_type())
+            && Type::match_id_digits(right_child.unwrap().data.clone().unwrap().get_type())
+        {
+            insert_node(pt_vec, new_id, parent_n.l_child.unwrap());
+        } else {
+            insert_node(pt_vec, new_id, parent_n.r_child.unwrap());
         }
     }
     Ok(())
 }
 // pub fn insert_node_with_parent()
-pub(crate) fn build_pt(mut pt_vec: PTVec,mut stack_v : Vec<String>)->PTVec{
+pub(crate) fn build_pt(mut pt_vec: PTVec, mut stack_v: Vec<String>) -> PTVec {
     let mut root_string: String = stack_v.pop().unwrap();
     let _root_a_t_m = pt_vec.new_node(MapStruct::new_struct(root_string.clone()));
-    for i in stack_v.clone().iter(){
+    for i in stack_v.clone().iter() {
         let mut current_string: String = stack_v.pop().unwrap();
         let mut _node_a_t_m = pt_vec.new_node(MapStruct::new_struct(current_string.clone()));
-        insert_node(&mut pt_vec,_node_a_t_m,_root_a_t_m);       
+        insert_node(&mut pt_vec, _node_a_t_m, _root_a_t_m);
     }
     pt_vec
 }
 #[derive(Clone, Eq, PartialEq)]
-pub struct Interpret { 
-    pub id_map:MapVec,
- 
+pub struct Interpret {
+    pub id_map: MapVec,
 }
 impl Interpret {
-
-    pub fn check_validity(&mut self, _stream_vec:  &mut VecDeque<String>) -> bool {
+    pub fn check_validity(&mut self, _stream_vec: &mut VecDeque<String>) -> bool {
         let mut b_val = true;
         let index: usize = 0;
         let mut _current_token = &_stream_vec[index];
@@ -172,17 +167,20 @@ impl Interpret {
         {
             if Type::is_eq_type(Lexer::return_type(_stream_vec[index + 1].clone())) {
                 let id_name = _stream_vec.pop_front();
-                for _ in 0..1{
+                for _ in 0..1 {
                     _stream_vec.pop_front();
                 }
-                let mut postfix_vec = ConvertInfix{
-                            top:-1,
-                            some_string:_stream_vec.clone(),
-                            stack:vec!["$".to_string()]
-                        }.to_postfix();
-                dbg!(postfix_vec.clone());            
-                
-                &mut self.id_map.insert_val(id_name.clone().unwrap(),postfix_vec);
+                let mut postfix_vec = ConvertInfix {
+                    top: -1,
+                    some_string: _stream_vec.clone(),
+                    stack: vec!["$".to_string()],
+                }
+                .to_postfix();
+                dbg!(postfix_vec.clone());
+
+                &mut self
+                    .id_map
+                    .insert_val(id_name.clone().unwrap(), postfix_vec);
                 return true;
             } else {
                 return false;
@@ -196,7 +194,6 @@ impl Interpret {
                         value: _current_token.clone(),
                         typ: Lexer::return_type(_current_token.clone()),
                     })
-                    
                 {
                     b_val = true;
                 } else {

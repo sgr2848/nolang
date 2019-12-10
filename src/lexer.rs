@@ -1,3 +1,4 @@
+#![allow(dead_code,unused_imports)]
 use regex::Regex;
 use std::collections::{HashMap, VecDeque};
 use std::string::String;
