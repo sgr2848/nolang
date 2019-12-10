@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::{
     lexer::{ConvertInfix, Lexer, Type},
     mapper::MapVec,
@@ -6,6 +7,7 @@ use super::{
 use regex::Regex;
 use std::collections::HashMap;
 use std::{
+    mem,
     fmt,
     error,
     collections::VecDeque,
@@ -88,14 +90,43 @@ impl IndexMut<NodeId> for PTVec {
 pub(crate) fn insert_node(
     pt_vec:&mut PTVec,
     new_id: NodeId,
-    parent_node: NodeId
+    parent_node_id: NodeId
 ) -> Result<(), CE> {
     /*
     TODO ->make it recursive tonight
     
     */
-    if parent_node == new_id {
+    if parent_node_id == new_id {
         return Err(CE::ParentE);
+    }
+    let mut parent_n = pt_vec.get_mut(parent_node_id).unwrap().clone();
+    let mut current_n  = pt_vec.get_mut(new_id).unwrap();
+    if parent_n.is_leaf(){
+        current_n.parent = Some(parent_node_id);
+        parent_n.l_child = Some(new_id);
+        mem::replace(&mut pt_vec[parent_node_id],parent_n)
+      
+    }
+    else if !parent_n.is_leaf() && !parent_n.is_full(){
+        if parent_n.l_child.is_none() && parent_n.r_child.is_some(){
+            parent_n.l_child = Some(new_id);
+            current_n.parent = Some(parent_node_id);            
+            current_n.sibling = parent_n.r_child;
+        }else{
+            parent_n.r_child = Some(new_id);
+            current_n.parent = Some(parent_node_id);            
+            current_n.sibling = parent_n.l_child;
+        }
+    }
+    else if parent_n.clone().is_full(){
+        let left_child = pt_vec.get(parent_n.l_child.unwrap());
+        let right_child = pt_vec.get(parent_n.r_child.unwrap());
+        if !Type::match_id_digits(left_child.unwrap().data.clone().unwrap().get_type())&&Type::match_id_digits(right_child.unwrap().data.clone().unwrap().get_type()){
+            insert_node(pt_vec, new_id,parent_n.l_child.unwrap());
+        }
+        else{
+            insert_node(pt_vec, new_id,parent_n.r_child.unwrap());
+        }
     }
     Ok(())
 }
@@ -188,7 +219,4 @@ impl Interpret {
     fn parse_div(&self, int_a: i32, int_b: i32) -> i32 {
         return int_a / int_b;
     }
-}
-enum PTVecError{
-
 }

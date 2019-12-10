@@ -42,7 +42,7 @@ fn main() {
                 let mut token_vector: VecDeque<String> = _a_token.get_token_queue();
                 let rar =&mut new_f.check_validity(&mut token_vector) ;
                 for (keys,value) in new_f.clone().id_map.data{
-                        println!(" the keys  {:?}",keys.get_value())
+                        println!(" the keys-->{:?}",keys.get_value())
                     }
                 if *rar {
                     loop {
