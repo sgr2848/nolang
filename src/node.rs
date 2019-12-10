@@ -40,6 +40,10 @@ impl ParseTreeNode {
             sibling: None,
         }
     }
+    pub fn is_full(self)->bool{
+        let a = self.r_child.is_some() && self.l_child.is_some();
+        a
+    }
     pub fn is_leaf(self) -> bool {
         match self.l_child {
             None => match self.r_child {

@@ -2,7 +2,7 @@ use super::{
     interpreter::{
         MapStruct,
         PTVec,
-        // create_pt
+        build_pt
     },
     lexer::{
         Type,
@@ -35,18 +35,14 @@ impl MapVec{
             false
         }
     }
-    pub fn insert_val(mut self,some_id : String,mut some_vec:Vec<String>)->Result<(),MapVecError>{
-        if Type::match_id(Lexer::return_type(some_id.clone())){
-            return Err(MapVecError::NotID);
-        }
-        let id_map_struct = MapStruct{
-            value: some_id.clone(),
-            typ: Lexer::return_type(some_id)
-        };
+    pub fn insert_val(&mut self,some_id : String,mut some_vec:Vec<String>){
+
+        let id_map_struct = MapStruct::new_struct(some_id.clone());
+        dbg!(some_id.clone());
         let mut parse_tree_vec  = PTVec::new_tree();
-        let new_ptvec = interpreter::build_pt(parse_tree_vec, some_vec);
-        self.data.insert(id_map_struct, new_ptvec.clone());
-        Ok(())
+        // let new_ptvec = build_pt(parse_tree_vec, some_vec);
+        self.data.insert(id_map_struct, parse_tree_vec.clone());
+
         
     }
 }

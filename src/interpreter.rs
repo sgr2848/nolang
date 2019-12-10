@@ -7,7 +7,7 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::{
     fmt,
-    error
+    error,
     collections::VecDeque,
     ops::{Index, IndexMut},
     string::String,
@@ -20,9 +20,9 @@ pub struct MapStruct {
     pub typ: Option<Type>,
 }
 impl MapStruct {
-    pub new_struct(some_string:String)->MapStruct{
+    pub fn new_struct(some_string:String)->MapStruct{
         MapStruct{
-            value: some_string,
+            value: some_string.clone(),
             typ: Lexer::return_type(some_string.clone())
         }
     }
@@ -88,52 +88,25 @@ impl IndexMut<NodeId> for PTVec {
 pub(crate) fn insert_node(
     pt_vec:&mut PTVec,
     new_id: NodeId,
-    parent_node: Node_Id
-
+    parent_node: NodeId
 ) -> Result<(), CE> {
     /*
     TODO ->make it recursive tonight
     
     */
-    if sibling == Some(new_id) {
-        return Err(CE::SiblingE);
-    }
-    if parent == Some(new_id) {
+    if parent_node == new_id {
         return Err(CE::ParentE);
-    }
-    if new_id.index() != 0 as usize {
-        let parent_node = pt_vec.get_mut(parent.unwrap()).unwrap();
-        let parent_map_struct_type = parent_node.clone().get().unwrap().get_type();
-        if parent_node.clone().is_leaf() && !Type::match_id_digits(parent_map_struct_type) {
-            parent_node.l_child = Some(new_id);
-            let mut current_node = &mut pt_vec.get_mut(new_id).unwrap();
-            current_node.parent = parent;
-        } else if !parent_node.clone().is_leaf() && !Type::match_id_digits(parent_map_struct_type) {
-            if parent_node.clone().left_child().is_none()
-                && parent_node.clone().right_child().is_some()
-            {
-                parent_node.l_child = Some(new_id);
-                let mut current_node = &mut pt_vec.get_mut(new_id).unwrap();
-                current_node.parent = parent;
-            } else if parent_node.clone().right_child().is_none()
-                && parent_node.clone().left_child().is_some()
-            {
-                parent_node.r_child = Some(new_id);
-                let mut current_node = &mut pt_vec.get_mut(new_id).unwrap();
-                current_node.parent = parent;
-            }
-        }
     }
     Ok(())
 }
-pub fn insert_node_with_parent()
+// pub fn insert_node_with_parent()
 pub(crate) fn build_pt(mut pt_vec: PTVec,mut stack_v : Vec<String>)->PTVec{
     let mut root_string: String = stack_v.pop().unwrap();
     let _root_a_t_m = pt_vec.new_node(MapStruct::new_struct(root_string.clone()));
     for i in stack_v.clone().iter(){
         let mut current_string: String = stack_v.pop().unwrap();
         let mut _node_a_t_m = pt_vec.new_node(MapStruct::new_struct(current_string.clone()));
-        interpreter.insert_node(pt_vec,_node_a_t_m,_root_a_t_m);       
+        insert_node(&mut pt_vec,_node_a_t_m,_root_a_t_m);       
     }
     pt_vec
 }
@@ -144,14 +117,14 @@ pub struct Interpret {
 }
 impl Interpret {
 
-    pub fn check_validity(mut self, _stream_vec:  &mut VecDeque<String>) -> bool {
+    pub fn check_validity(&mut self, _stream_vec:  &mut VecDeque<String>) -> bool {
         let mut b_val = true;
         let index: usize = 0;
         let mut _current_token = &_stream_vec[index];
         if _stream_vec.len() == 1 as usize
             && Type::match_id(Lexer::return_type(_current_token.clone()))
         {
-            if self.id_map.value_exists(MapStruct {
+            if self.id_map.clone().value_exists(MapStruct {
                 value: _current_token.clone(),
                 typ: Lexer::return_type(_current_token.clone()),
             }) {
@@ -170,8 +143,15 @@ impl Interpret {
                 let id_name = _stream_vec.pop_front();
                 for _ in 0..1{
                     _stream_vec.pop_front();
-                }                
-                self.id_map.insert_val(id_name.clone(),_stream_vec.clone());
+                }
+                let mut postfix_vec = ConvertInfix{
+                            top:-1,
+                            some_string:_stream_vec.clone(),
+                            stack:vec!["$".to_string()]
+                        }.to_postfix();
+                dbg!(postfix_vec.clone());            
+                
+                &mut self.id_map.insert_val(id_name.clone().unwrap(),postfix_vec);
                 return true;
             } else {
                 return false;
