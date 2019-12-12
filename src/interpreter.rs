@@ -112,9 +112,7 @@ pub(crate) fn insert_node_efi(pt_vec:&mut PTVec,new_id:NodeId,operand_stack:&mut
 }
 
 pub(crate) fn build_pt(mut pt_vec: PTVec, mut stack_v: VecDeque<String>) -> PTVec {
-    // let mut root_string: String = stack_v.pop().unwrap();
-    // let _root_a_t_m = pt_vec.new_node(MapStruct::new_struct(root_string.clone()));
-    // dbg!(_root_a_t_m.clone().index());
+
     let mut operand_stack = Vec::new();
     for i in stack_v.clone().iter() {
         dbg!(i);        
@@ -124,9 +122,35 @@ pub(crate) fn build_pt(mut pt_vec: PTVec, mut stack_v: VecDeque<String>) -> PTVe
     }
     pt_vec
 }
-// pub(crate) fn prune_tree(&mut pt_vec: PTVec,n: NodeId)->PTVec{
-// }
-
+pub(crate)fn print_postorder_tree(pt_vec :&PTVec,_ni:NodeId){
+    if pt_vec.get(_ni).is_none(){
+        print!("kali");
+    }else{
+        let current_n = pt_vec.get(_ni).unwrap();
+        if current_n.clone().l_child.is_some(){
+            print_postorder_tree(pt_vec,current_n.l_child.unwrap());
+        }
+        if current_n.clone().r_child.is_some(){
+            print_postorder_tree(pt_vec,current_n.r_child.unwrap());
+        }
+        print!("{} -> ",current_n.clone().data.unwrap().get_value())
+    }
+}
+pub(crate)fn print_inorder_tree(pt_vec :&PTVec,_ni:NodeId){
+    if pt_vec.get(_ni).is_none(){
+        print!("kali");
+    }else{
+        let current_n = pt_vec.get(_ni).unwrap();
+        if current_n.clone().l_child.is_some(){
+            print_inorder_tree(pt_vec,current_n.l_child.unwrap());
+        }
+        print!("{} -> ",current_n.clone().data.unwrap().get_value());
+        if current_n.clone().r_child.is_some(){
+            print_inorder_tree(pt_vec,current_n.r_child.unwrap());
+        }        
+    }
+    
+}
 #[derive(Clone, Eq, PartialEq)]
 pub struct Interpret {
     pub id_map: MapVec,

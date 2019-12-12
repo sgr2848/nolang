@@ -5,11 +5,11 @@ use std::{fmt,error};
 use super::interpreter::{
     MapStruct,
     PTVec,
-    insert_node,
+    
 };
 #[derive(Clone,Eq,PartialEq,Copy)]
 pub struct NodeId {
-    index: usize,
+    pub index: usize,
 }
 impl NodeId {
     pub fn index(self)->usize{

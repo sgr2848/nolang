@@ -59,6 +59,9 @@ fn main() {
         j += 1;
         println!("");
     }
+    interpreter::print_postorder_tree(&new_tree, node::NodeId{index:new_tree.nodes.len()-1});
+    println!(".............AndDONE");
+    interpreter::print_inorder_tree(&new_tree, node::NodeId{index:new_tree.nodes.len()-1});
     // dbg!(new_tree);
 
     // match cli::start_nano() {
