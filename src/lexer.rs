@@ -222,17 +222,17 @@ impl ConvertInfix {
             false
         }
     }
-    pub fn to_postfix(&mut self) -> Vec<String> {
-        let mut return_vector = Vec::new();
+    pub fn to_postfix(&mut self) -> VecDeque<String> {
+        let mut return_vector = VecDeque::new();
         for i in self.some_string.clone().iter() {
             if self.is_operand(i.to_string()) {
-                return_vector.push(i.to_string());
+                return_vector.push_back(i.to_string());
             } else if i.to_string() == "(".to_string() {
                 self.push(i.to_string())
             } else if i.to_string() == ")".to_string() {
                 while (!self.is_empty()) && (self.peek() != "(") {
                     let a: String = self.pop();
-                    return_vector.push(a);
+                    return_vector.push_back(a);
                 }
                 if !self.is_empty() && self.peek() != "(" {
                     println!("Something");
@@ -241,13 +241,13 @@ impl ConvertInfix {
                 }
             } else {
                 while (!self.is_empty()) && self.not_greater(i.to_string()) {
-                    return_vector.push(self.pop());
+                    return_vector.push_back(self.pop());
                 }
                 self.push(i.to_string());
             }
         }
         while !self.is_empty() {
-            return_vector.push(self.pop());
+            return_vector.push_back(self.pop());
         }
         return_vector
     }

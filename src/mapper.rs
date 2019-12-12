@@ -35,7 +35,7 @@ impl MapVec{
             false
         }
     }
-    pub fn insert_val(&mut self,some_id : String,mut some_vec:Vec<String>){
+    pub fn insert_val(&mut self,some_id : String,mut some_vec:VecDeque<String>){
 
         let id_map_struct = MapStruct::new_struct(some_id.clone());
         dbg!(some_id.clone());
