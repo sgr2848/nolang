@@ -32,7 +32,7 @@ fn main() {
     println!( " \n________________");
     println!("The tree now");
     let mut pt = interpreter::PTVec::new_tree();
-    let new_tree = interpreter::build_pt(pt,rus);
+    let mut new_tree = interpreter::build_pt(pt,rus);
     let mut j : usize = 0;
     for i in new_tree.iter(){        
         print!("d:{} ,i : {}|",i.clone().data.unwrap().value,j.clone());
@@ -62,6 +62,11 @@ fn main() {
     interpreter::print_postorder_tree(&new_tree, node::NodeId{index:new_tree.nodes.len()-1});
     println!(".............AndDONE");
     interpreter::print_inorder_tree(&new_tree, node::NodeId{index:new_tree.nodes.len()-1});
+    println!(".............AndDONE");
+    interpreter::print_preorder_tree(&new_tree, node::NodeId{index:new_tree.nodes.len()-1});
+    println!(".............AndDONE");
+    let length:usize = new_tree.clone().nodes.len();
+    interpreter::evaluate_pt(&mut new_tree, node::NodeId{index:length-1});
     // dbg!(new_tree);
 
     // match cli::start_nano() {
