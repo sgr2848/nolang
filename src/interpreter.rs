@@ -51,7 +51,7 @@ impl MapStruct {
 }
 #[derive(Clone, Eq, PartialEq)]
 pub struct PTVec {
-    pub nodes: Vec<ParseTreeNode>,
+    pub nodes: VecDeque<ParseTreeNode>,
 }
 impl PTVec {
     pub fn new_tree() -> PTVec {
@@ -65,7 +65,7 @@ impl PTVec {
     }
     pub fn new_node(&mut self, data: MapStruct) -> NodeId {
         let next_id = self.nodes.len();
-        self.nodes.push(ParseTreeNode::new_node(data));
+        self.nodes.push_back(ParseTreeNode::new_node(data));
         NodeId::rs(next_id)
     }
     pub fn iter(&self) -> impl Iterator<Item = &ParseTreeNode> {
@@ -74,7 +74,9 @@ impl PTVec {
 }
 impl Default for PTVec {
     fn default() -> Self {
-        Self { nodes: Vec::new() }
+        Self {
+            nodes: VecDeque::new(),
+        }
     }
 }
 impl Index<NodeId> for PTVec {
@@ -88,22 +90,19 @@ impl IndexMut<NodeId> for PTVec {
         &mut self.nodes[node.index()]
     }
 }
-pub(crate) fn insert_node_efi(pt_vec:&mut PTVec,new_id:NodeId,operand_stack:&mut Vec<NodeId>){
-    
+pub(crate) fn insert_node_efi(pt_vec: &mut PTVec, new_id: NodeId, operand_stack: &mut Vec<NodeId>) {
     let current_n = pt_vec.get(new_id).unwrap();
-    if Type::match_id_digits(current_n.clone().data.unwrap().get_type()){
-       operand_stack.push(new_id); 
-    }else{
+    if Type::match_id_digits(current_n.clone().data.unwrap().get_type()) {
+        operand_stack.push(new_id);
+    } else {
         let right = operand_stack.pop();
         let left = operand_stack.pop();
         let mut parent_ptn = pt_vec.get_mut(new_id).unwrap();
         parent_ptn.r_child = right;
         parent_ptn.l_child = left;
-        
         let mut right_ptn = pt_vec.get_mut(right.unwrap()).unwrap();
         right_ptn.sibling = left;
         right_ptn.parent = Some(new_id);
-        
         let mut left_ptn = pt_vec.get_mut(left.unwrap()).unwrap();
         left_ptn.parent = Some(new_id);
         left_ptn.sibling = right;
@@ -112,130 +111,110 @@ pub(crate) fn insert_node_efi(pt_vec:&mut PTVec,new_id:NodeId,operand_stack:&mut
 }
 
 pub(crate) fn build_pt(mut pt_vec: PTVec, mut stack_v: VecDeque<String>) -> PTVec {
-
     let mut operand_stack = Vec::new();
     for i in stack_v.clone().iter() {
-        dbg!(i);        
+        dbg!(i);
         let mut current_string: String = stack_v.pop_front().unwrap();
         let mut _node_a_t_m = pt_vec.new_node(MapStruct::new_struct(current_string.clone()));
         insert_node_efi(&mut pt_vec, _node_a_t_m, &mut operand_stack)
     }
     pt_vec
 }
-pub(crate)fn evaluate_pt(pt_vec:&mut PTVec, _ni:NodeId)->i32{
+pub(crate) fn evaluate_pt(pt_vec: &mut PTVec, _ni: NodeId) -> i32 {
     let a = pt_vec.clone();
     let mut current_n = a.get(_ni).unwrap();
-    if Type::match_digits(current_n.clone().data.unwrap().get_type()){
+    if Type::match_digits(current_n.clone().data.unwrap().get_type()) {
         //not that cstring
         let c_string = current_n.clone().data.unwrap().get_value();
-        let my_int: i32=  c_string.parse().unwrap();
+        let my_int: i32 = c_string.parse().unwrap();
         dbg!(my_int);
-        return my_int
-    }else{
+        return my_int;
+    } else {
         let mut workin_node_clone = current_n.clone();
-        let left = evaluate_pt(pt_vec,current_n.l_child.unwrap());      
-        let right = evaluate_pt(pt_vec,current_n.r_child.unwrap());  
-        if current_n.clone().data.unwrap().get_value() == String::from("+"){
-            workin_node_clone.l_child =None;
-            workin_node_clone.r_child = None;            
-            let int_val = left+right;
+        let left = evaluate_pt(pt_vec, current_n.l_child.unwrap());
+        let right = evaluate_pt(pt_vec, current_n.r_child.unwrap());
+        if current_n.clone().data.unwrap().get_value() == String::from("+") {
+            workin_node_clone.l_child = None;
+            workin_node_clone.r_child = None;
+            let int_val = left + right;
             workin_node_clone.data = Some(MapStruct::new_struct(int_val.to_string()));
             mem::replace(&mut pt_vec[_ni], workin_node_clone);
             dbg!(int_val);
-            return int_val            
+            return int_val;
         }
-        if current_n.clone().data.unwrap().get_value() == String::from("-"){
-            workin_node_clone.l_child =None;
-            workin_node_clone.r_child = None;            
-            let int_val = left-right;
+        if current_n.clone().data.unwrap().get_value() == String::from("-") {
+            workin_node_clone.l_child = None;
+            workin_node_clone.r_child = None;
+            let int_val = left - right;
             workin_node_clone.data = Some(MapStruct::new_struct(int_val.to_string()));
             mem::replace(&mut pt_vec[_ni], workin_node_clone);
             dbg!(int_val);
-            return int_val       
+            return int_val;
         }
-        if current_n.clone().data.unwrap().get_value() == String::from("*"){
-            workin_node_clone.l_child =None;
-            workin_node_clone.r_child = None;            
-            let int_val = left*right;
-            workin_node_clone.data =Some(MapStruct::new_struct(int_val.to_string()));
+        if current_n.clone().data.unwrap().get_value() == String::from("*") {
+            workin_node_clone.l_child = None;
+            workin_node_clone.r_child = None;
+            let int_val = left * right;
+            workin_node_clone.data = Some(MapStruct::new_struct(int_val.to_string()));
             mem::replace(&mut pt_vec[_ni], workin_node_clone);
             dbg!(int_val);
-            return int_val       
+            return int_val;
         }
-        if current_n.clone().data.unwrap().get_value() == String::from("/"){
-            workin_node_clone.l_child =None;
-            workin_node_clone.r_child = None;            
-            let int_val = left/right;
-            workin_node_clone.data =Some(MapStruct::new_struct(int_val.to_string()));
+        if current_n.clone().data.unwrap().get_value() == String::from("/") {
+            workin_node_clone.l_child = None;
+            workin_node_clone.r_child = None;
+            let int_val = left / right;
+            workin_node_clone.data = Some(MapStruct::new_struct(int_val.to_string()));
             mem::replace(&mut pt_vec[_ni], workin_node_clone);
             dbg!(int_val);
-            return int_val       
+            return int_val;
+        } else {
+            return 0 as i32;
         }
-        else{
-            return 0 as i32
-        }
+    }
+}
 
+pub(crate) fn print_preorder_tree(pt_vec: &PTVec, _ni: NodeId) {
+    if pt_vec.get(_ni).is_none() {
+        print!("kali");
+    } else {
+        let current_n = pt_vec.get(_ni).unwrap();
+        print!("{} -> ", current_n.clone().data.unwrap().get_value());
+        if current_n.clone().l_child.is_some() {
+            print_preorder_tree(pt_vec, current_n.l_child.unwrap());
+        }
+        if current_n.clone().r_child.is_some() {
+            print_preorder_tree(pt_vec, current_n.r_child.unwrap());
+        }
     }
 }
-// pub(crate)fn prune_tree(pt_vec:&PTVec,_ni:NodeId)->i32{
-//     let current_n = pt_vec.get(_ni).unwrap();
-//     if Type::match_digits(current_n.clone().data.unwrap().get_type()){
-//         //not that cstring
-//         let c_string = current_n.clone().data.unwrap().get_value();
-//         let my_int: i32=  c_string.parse().unwrap();
-//         dbg!(my_int);
-//         return my_int
-//     }else{
- 
-//         let left = prune_tree(pt_vec,current_n.l_child.unwrap());      
-//         let right = prune_tree(pt_vec,current_n.r_child.unwrap());        
-//         dbg!(left,right);
-//         if left 
-//     }    
-// }
-pub(crate)fn print_preorder_tree(pt_vec :&PTVec,_ni:NodeId){
-    if pt_vec.get(_ni).is_none(){
+pub(crate) fn print_postorder_tree(pt_vec: &PTVec, _ni: NodeId) {
+    if pt_vec.get(_ni).is_none() {
         print!("kali");
-    }else{
+    } else {
         let current_n = pt_vec.get(_ni).unwrap();
-        print!("{} -> ",current_n.clone().data.unwrap().get_value());
-        if current_n.clone().l_child.is_some(){
-            print_preorder_tree(pt_vec,current_n.l_child.unwrap());
+        if current_n.clone().l_child.is_some() {
+            print_postorder_tree(pt_vec, current_n.l_child.unwrap());
         }
-        if current_n.clone().r_child.is_some(){
-            print_preorder_tree(pt_vec,current_n.r_child.unwrap());
+        if current_n.clone().r_child.is_some() {
+            print_postorder_tree(pt_vec, current_n.r_child.unwrap());
         }
-        
+        print!("{} -> ", current_n.clone().data.unwrap().get_value())
     }
 }
-pub(crate)fn print_postorder_tree(pt_vec :&PTVec,_ni:NodeId){
-    if pt_vec.get(_ni).is_none(){
+pub(crate) fn print_inorder_tree(pt_vec: &PTVec, _ni: NodeId) {
+    if pt_vec.get(_ni).is_none() {
         print!("kali");
-    }else{
+    } else {
         let current_n = pt_vec.get(_ni).unwrap();
-        if current_n.clone().l_child.is_some(){
-            print_postorder_tree(pt_vec,current_n.l_child.unwrap());
+        if current_n.clone().l_child.is_some() {
+            print_inorder_tree(pt_vec, current_n.l_child.unwrap());
         }
-        if current_n.clone().r_child.is_some(){
-            print_postorder_tree(pt_vec,current_n.r_child.unwrap());
+        print!("{} -> ", current_n.clone().data.unwrap().get_value());
+        if current_n.clone().r_child.is_some() {
+            print_inorder_tree(pt_vec, current_n.r_child.unwrap());
         }
-        print!("{} -> ",current_n.clone().data.unwrap().get_value())
     }
-}
-pub(crate)fn print_inorder_tree(pt_vec :&PTVec,_ni:NodeId){
-    if pt_vec.get(_ni).is_none(){
-        print!("kali");
-    }else{
-        let current_n = pt_vec.get(_ni).unwrap();
-        if current_n.clone().l_child.is_some(){
-            print_inorder_tree(pt_vec,current_n.l_child.unwrap());
-        }
-        print!("{} -> ",current_n.clone().data.unwrap().get_value());
-        if current_n.clone().r_child.is_some(){
-            print_inorder_tree(pt_vec,current_n.r_child.unwrap());
-        }        
-    }
-    
 }
 #[derive(Clone, Eq, PartialEq)]
 pub struct Interpret {
@@ -275,8 +254,7 @@ impl Interpret {
                     stack: vec!["$".to_string()],
                 }
                 .to_postfix();
-                dbg!(postfix_vec.clone());
-
+                // mem::replace(&mut _stream_vec, &mut postfix_vec);
                 &mut self
                     .id_map
                     .insert_val(id_name.clone().unwrap(), postfix_vec);
@@ -286,7 +264,9 @@ impl Interpret {
             }
         } else {
             for i in 0..(_stream_vec.len() - 1) {
-                if Type::match_digits(Lexer::return_type(_stream_vec[i].clone())) {
+                if Type::match_digits(Lexer::return_type(_stream_vec[i].clone()))
+                    || !Type::match_id(Lexer::return_type(_stream_vec[i].clone()))
+                {
                     b_val = true;
                 } else if !Type::is_eq_type(Lexer::return_type(_stream_vec[i].clone()))
                     && self.id_map.clone().value_exists(MapStruct {
@@ -302,17 +282,5 @@ impl Interpret {
             }
             b_val
         }
-    }
-    fn parse_sum(int_a: i32, int_b: i32) -> i32 {
-        return int_a + int_b;
-    }
-    fn parse_mut(int_a: i32, int_b: i32) -> i32 {
-        return int_a * int_b;
-    }
-    fn parse_diff(int_a: i32, int_b: i32) -> i32 {
-        return int_a - int_b;
-    }
-    fn parse_div(int_a: i32, int_b: i32) -> i32 {
-        return int_a / int_b;
     }
 }

@@ -54,6 +54,13 @@ impl ParseTreeNode {
             _ => false,
         }
     }
+    pub fn get_data(self)->Option<String>{
+        if self.data.is_some(){
+            return Some(self.data.unwrap().get_value())
+        }else{
+            None
+        }
+    }
     pub fn get(self)->Option<MapStruct>{
         self.data
     }

@@ -71,6 +71,19 @@ impl Type {
 pub struct Lexer<'a> {
     pub a_value: &'a String,
 }
+pub(crate) fn no_id(some_vec:&VecDeque<String>)->bool{
+    let mut return_bool = true;
+    for i in some_vec.iter(){
+        if !Type::match_id(Lexer::return_type(i.to_string())){
+            return_bool = true;
+         }
+         else{
+            return_bool = false;
+            break;            
+        }
+    }
+    return_bool 
+}
 
 impl<'a> Lexer<'a> {
     pub fn get_token_queue(&self) -> VecDeque<String> {
