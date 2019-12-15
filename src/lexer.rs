@@ -42,6 +42,16 @@ impl Type {
             None => String::from("Nan"),
         }
     }
+      pub fn is_op(a_type: Option<Type>) ->bool {
+        match a_type {
+            Some(Type::Multiply) =>true,
+            Some(Type::Plus) => true,
+            Some(Type::Minus) => true,
+            Some(Type::Divide) =>true,
+            _ =>false
+            
+        }
+    }
     pub fn match_id_digits(some_type: Option<Type>) -> bool {
         match some_type {
             Some(Type::Identifier) => true,
@@ -91,6 +101,7 @@ impl<'a> Lexer<'a> {
          *The follwing function takes in string tokenizes them(seperating by whitespace) and returns token in fifo fashion
          */
         let string_to_break = self.a_value.split_whitespace();
+        
         let mut token_queue: VecDeque<String> = VecDeque::new();
         for token in string_to_break {
             let mut i_string = String::new();
@@ -99,12 +110,15 @@ impl<'a> Lexer<'a> {
             let reg_id = Regex::new(r"[a-zA-Z]").unwrap();
             let digi_id = Regex::new(r"\d").unwrap();
             for charcter in rem_v.iter() {
-                if reg_id.is_match(&charcter.to_string()) || digi_id.is_match(&charcter.to_string())
+                if reg_id.is_match(&charcter.to_string()) || digi_id.is_match(&charcter.to_string()) 
                 {
                     i_string.push(*charcter);
-                } else {
+                } 
+                else {
                     dbg!(i_string.clone());
-                    token_queue.push_back(i_string.clone());
+                    if i_string != ""{
+                        token_queue.push_back(i_string.clone());
+                    }
                     while !i_string.is_empty() {
                         i_string.remove(i_string.len() - 1);
                     }

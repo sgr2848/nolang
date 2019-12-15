@@ -31,6 +31,15 @@ pub struct ParseTreeNode {
 }
 
 impl ParseTreeNode {
+    pub fn new() -> ParseTreeNode{
+        ParseTreeNode{
+            data: None,
+            r_child: None,
+            l_child: None,
+            parent: None,
+            sibling: None,
+        }
+    }
     pub(crate) fn new_node(data_in: MapStruct) -> ParseTreeNode {
         ParseTreeNode {
             data: Some(data_in),
@@ -76,6 +85,9 @@ impl ParseTreeNode {
     }
     pub fn right_child(self) -> Option<NodeId> {
         self.r_child
+    }
+    pub fn sibling(self) -> Option<NodeId> {
+        self.sibling
     }
 }
 #[derive(Clone,Copy)]

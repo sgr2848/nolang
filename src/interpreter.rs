@@ -91,29 +91,48 @@ impl IndexMut<NodeId> for PTVec {
     }
 }
 pub(crate) fn insert_node_efi(pt_vec: &mut PTVec, new_id: NodeId, operand_stack: &mut Vec<NodeId>) {
+    
     let current_n = pt_vec.get(new_id).unwrap();
+    dbg!(operand_stack.len());
     if Type::match_id_digits(current_n.clone().data.unwrap().get_type()) {
         operand_stack.push(new_id);
-    } else {
+    } else{
         let right = operand_stack.pop();
+        // assert!(right.is_some());
+        // dbg!(right.clone().unwrap().index());
         let left = operand_stack.pop();
-        let mut parent_ptn = pt_vec.get_mut(new_id).unwrap();
-        parent_ptn.r_child = right;
-        parent_ptn.l_child = left;
-        let mut right_ptn = pt_vec.get_mut(right.unwrap()).unwrap();
-        right_ptn.sibling = left;
-        right_ptn.parent = Some(new_id);
-        let mut left_ptn = pt_vec.get_mut(left.unwrap()).unwrap();
-        left_ptn.parent = Some(new_id);
-        left_ptn.sibling = right;
-        operand_stack.push(new_id);
+        // assert!(left.is_some()); 
+        if left.is_some() && right.is_some(){     
+            dbg!(left.clone().unwrap().index());  
+            let mut parent_ptn = pt_vec.get_mut(new_id).unwrap();
+            parent_ptn.r_child = right;
+            parent_ptn.l_child = left;
+            let mut right_ptn = pt_vec.get_mut(right.unwrap()).unwrap();       
+            
+            right_ptn.sibling = left;
+            right_ptn.parent = Some(new_id);
+            let mut left_ptn = pt_vec.get_mut(left.unwrap()).unwrap();
+            left_ptn.parent = Some(new_id);
+            left_ptn.sibling = right;
+            operand_stack.push(new_id);
+        }
+        else if left.is_none() && right.is_some(){
+            // dbg!(right.clone().unwrap().index());
+            let mut parent_ptn = pt_vec.get_mut(new_id).unwrap();
+            parent_ptn.r_child = right;
+            let mut right_ptn = pt_vec.get_mut(right.unwrap()).unwrap();
+            right_ptn.parent = Some(new_id);
+            operand_stack.push(new_id);
+        }else if right.is_none() && left.is_none(){
+            operand_stack.push(new_id);
+        }
     }
 }
 
 pub(crate) fn build_pt(mut pt_vec: PTVec, mut stack_v: VecDeque<String>) -> PTVec {
     let mut operand_stack = Vec::new();
     for i in stack_v.clone().iter() {
-        dbg!(i);
+        // dbg!(i);
         let mut current_string: String = stack_v.pop_front().unwrap();
         let mut _node_a_t_m = pt_vec.new_node(MapStruct::new_struct(current_string.clone()));
         insert_node_efi(&mut pt_vec, _node_a_t_m, &mut operand_stack)
@@ -129,7 +148,8 @@ pub(crate) fn evaluate_pt(pt_vec: &mut PTVec, _ni: NodeId) -> i32 {
         let my_int: i32 = c_string.parse().unwrap();
         dbg!(my_int);
         return my_int;
-    } else {
+    } 
+    else if current_n.clone().l_child.is_some() && current_n.clone().r_child.is_some(){
         let mut workin_node_clone = current_n.clone();
         let left = evaluate_pt(pt_vec, current_n.l_child.unwrap());
         let right = evaluate_pt(pt_vec, current_n.r_child.unwrap());
@@ -139,7 +159,7 @@ pub(crate) fn evaluate_pt(pt_vec: &mut PTVec, _ni: NodeId) -> i32 {
             let int_val = left + right;
             workin_node_clone.data = Some(MapStruct::new_struct(int_val.to_string()));
             mem::replace(&mut pt_vec[_ni], workin_node_clone);
-            dbg!(int_val);
+            // dbg!(int_val);
             return int_val;
         }
         if current_n.clone().data.unwrap().get_value() == String::from("-") {
@@ -148,7 +168,7 @@ pub(crate) fn evaluate_pt(pt_vec: &mut PTVec, _ni: NodeId) -> i32 {
             let int_val = left - right;
             workin_node_clone.data = Some(MapStruct::new_struct(int_val.to_string()));
             mem::replace(&mut pt_vec[_ni], workin_node_clone);
-            dbg!(int_val);
+            // dbg!(int_val);
             return int_val;
         }
         if current_n.clone().data.unwrap().get_value() == String::from("*") {
@@ -171,6 +191,71 @@ pub(crate) fn evaluate_pt(pt_vec: &mut PTVec, _ni: NodeId) -> i32 {
         } else {
             return 0 as i32;
         }
+    }else if current_n.clone().l_child.is_none() &&current_n.clone().r_child.is_some(){
+        let mut workin_node_clone = current_n.clone();
+        let mut right = evaluate_pt(pt_vec, current_n.r_child.unwrap());
+        if current_n.clone().data.unwrap().get_value() == String::from("+") {
+            workin_node_clone.l_child = None;
+            workin_node_clone.r_child = None;
+            workin_node_clone.data = Some(MapStruct::new_struct(right.to_string()));
+            mem::replace(&mut pt_vec[_ni], workin_node_clone);
+            return right;
+        }
+        if current_n.clone().data.unwrap().get_value() == String::from("-") {
+            workin_node_clone.l_child = None;
+
+            workin_node_clone.r_child = None;
+            right = 0- right;
+            workin_node_clone.data = Some(MapStruct::new_struct(right.to_string()));
+            mem::replace(&mut pt_vec[_ni], workin_node_clone);           
+            return right;
+        }
+        if current_n.clone().data.unwrap().get_value() == String::from("*") {
+            print!("cant");
+            return 0 as i32
+            
+        }
+        if current_n.clone().data.unwrap().get_value() == String::from("/") {
+            print!("cant");
+            return 0 as i32
+            
+        }else{
+            return 0;
+        }
+                    
+    }
+    else if current_n.clone().l_child.is_some() &&current_n.clone().r_child.is_none(){
+        let mut workin_node_clone = current_n.clone();
+        let mut left = evaluate_pt(pt_vec, current_n.l_child.unwrap());
+        if current_n.clone().data.unwrap().get_value() == String::from("+") {
+            workin_node_clone.l_child = None;
+            workin_node_clone.data = Some(MapStruct::new_struct(left.to_string()));
+            mem::replace(&mut pt_vec[_ni], workin_node_clone);
+            return left;
+        }
+        if current_n.clone().data.unwrap().get_value() == String::from("-") {
+            left = 0- left;
+            workin_node_clone.l_child = None;
+            workin_node_clone.data = Some(MapStruct::new_struct(left.to_string()));
+            mem::replace(&mut pt_vec[_ni], workin_node_clone);
+            return (left);
+        }
+        if current_n.clone().data.unwrap().get_value() == String::from("*") {
+            print!("cant");
+            return 0;
+            
+        }
+        if current_n.clone().data.unwrap().get_value() == String::from("/") {
+            print!("cant");
+            return 0;
+            // return 0 as i32;
+        }
+        else{
+            return 0;
+        }
+    }
+    else{
+        return 0 as i32
     }
 }
 
